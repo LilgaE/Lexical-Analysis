@@ -31,7 +31,6 @@ LexAnalyzer(istream& infile){
 	infile >> token >> lex;
 	while(!infile.eof()){
 		tokenmap[lex]=token;
-		//cout << tokenmap[lex]<<endl;
 		infile >> token >> lex;
 	}
 }
@@ -43,18 +42,21 @@ void scanFile(istream& infile, ostream& outfile){
 // file have been written to the output file.  If there is an error,
 // the incomplete token/lexeme pairs, as well as an error message have // written to the output file.  A success or fail message has printed // to the console.
 	string str;
+	//str is the output string
 	string line;
 	bool restart;
+	//used as a check to see if a value has been found.
 	bool newline = false;
+	//for strings on two lines
 	getline(infile, line);
 		while(!infile.eof()){
 			for (int i = 0; i < line.length(); i++){
 				//fills vector from line from file
 				lexemes.push_back(line[i]);
-				//cout << vtest[i] << endl;
 			}
 			for (int i = 0; i < lexemes.size(); i++){
 				if (newline){
+					//for when strings go over two lines
 					while(lexemes[i]!='"'){
 						str = str + lexemes[i];
 						i++;
@@ -65,7 +67,10 @@ void scanFile(istream& infile, ostream& outfile){
 					restart = true;
 					newline = false;
 				}
+
 				restart = false;
+
+				//searches for keywords
 				if (lexemes[i]=='b' && lexemes[i+1]=='e' && lexemes[i+2]=='g' && lexemes[i+3]=='i' && lexemes[i+4]=='n' && !restart){
 					outfile<<findToken("begin")<< " : begin"<<endl;i = i+4;restart = true;}
 				if (lexemes[i]=='e' && lexemes[i+1]=='n' && lexemes[i+2]=='d' && !restart){
@@ -92,6 +97,8 @@ void scanFile(istream& infile, ostream& outfile){
 					outfile<<findToken("var")<<" : var"<<endl;i = i+2;restart = true;}
 				if (lexemes[i]=='w' && lexemes[i+1]=='h' && lexemes[i+2]=='i' && lexemes[i+3]=='l' && lexemes[i+4]=='e'&& !restart){
 					outfile<<findToken("while")<<" : while"<<endl;i = i+4;restart = true;}
+
+				//searches for symbols and all operators
 				if (lexemes[i]=='<'&& lexemes[i+1]=='='&& !restart){
 					outfile<<findToken("<=")<<" : <="<<endl;i = i+1;restart = true;}
 				if (lexemes[i]=='>'&& lexemes[i+1]=='='&& !restart){
@@ -131,6 +138,8 @@ void scanFile(istream& infile, ostream& outfile){
 				if (lexemes[i]=='!'&& !restart){
 					outfile<<findToken("!")<<" : !"<<endl;restart = true;}
 
+
+				//checks if int
 				if (int(lexemes[i]) >= 48 && int(lexemes[i]) <= 57 && !restart){
 					str = str + lexemes[i];
 					i++;
@@ -142,7 +151,7 @@ void scanFile(istream& infile, ostream& outfile){
 					str = "";
 					restart = true;
 				}
-
+				//checks if string starts with "
 				if(lexemes[i]=='"'&& !restart){
 					i++;
 					while(lexemes[i]!='"' && !newline){
@@ -158,9 +167,10 @@ void scanFile(istream& infile, ostream& outfile){
 
 				}
 
-
+				//checks to see if first value is a char
 				if(((int(lexemes[i]) >= 65 && int(lexemes[i]) <= 90) || (int(lexemes[i]) >= 97 && int(lexemes[i]) <= 122)) && !restart){
 					str = str + lexemes[i];
+					//checks the following if char or int
 					while((int(lexemes[i+1]) >= 65 && int(lexemes[i+1]) <= 90) || (int(lexemes[i+1]) >= 97 && int(lexemes[i+1]) <= 122) || (int(lexemes[i+1]) >= 48 && int(lexemes[i+1]) <= 57)){
 						str = str + lexemes[i+1];
 						i++;
@@ -169,14 +179,19 @@ void scanFile(istream& infile, ostream& outfile){
 					str = "";
 					restart = true;
 				}
+
+				//Checks for errors
 				if(!restart && lexemes[i] != ' ' && !newline){
 					cout<<"error unexpected : "<< line <<endl;
 					outfile<<"error unexpected : "<< line <<endl;
+					cout << "Not completed"<<endl;
+					exit(-1);
 				}
 			}
 			lexemes.clear();
 			getline(infile, line);
 		}
+		cout << "completed"<<endl;
 	}
 	string findToken(string word){
 		return tokenmap[word];
@@ -186,26 +201,26 @@ void scanFile(istream& infile, ostream& outfile){
 };
 
 int main() {
-	string test;
-	vector<char> vtest;
 	string scfile;
 	string outFile;
-	cout << "please enter the source code file name" << endl;
+	cout << "please enter the source code file name include .txt" << endl;
 	cin >> scfile;
-	cout << "please enter the output file name" << endl;
+	cout << "please enter the output file name include .txt" << endl;
 	cin >> outFile;
 	ifstream lexfile("LexFile.txt");
-	//ifstream infile("sourceCode.txt"); HARD CODED FILE
 	ifstream infile(scfile);
-	//ofstream  outfile("outPut.txt"); HARD CODED FILE
 	ofstream  outfile(outFile);
 	if(!infile){
-			exit(-1);
+		cout <<"source file not found"<< endl;
+		exit(-1);
+		}
+	if(!outfile){
+		cout <<"output file not found"<< endl;
+		exit(-1);
 		}
 	LexAnalyzer lexTest(lexfile);
 	lexTest.scanFile(infile, outfile);
-	cout << "Thank you for using the lexical analysis!"<<endl;
-
+	cout << "Thank you for using the lexical analyzer!"<<endl;
 	return 0;
 }
 
