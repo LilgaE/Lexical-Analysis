@@ -30,4 +30,6 @@ s_mod %
 s_and &&
 s_or ||
 s_not !
- 
+t_id identify
+t_int tint
+t_str tstr
